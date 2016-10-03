@@ -3,35 +3,25 @@
 
 static struct termios old, new;
 
-/* Initialise new terminal I/O settings */
-void initTermios(int echo) {
+/* Set new terminal I/O settings */
+void set_termios(void) {
     tcgetattr(0, &old); /* grab old terminal i/o settings */
     new = old; /* make new settings same as old settings */
     new.c_lflag &= ~ICANON; /* disable buffered i/o */
-    new.c_lflag &= echo ? ECHO : ~ECHO; /* set echo mode */
+    new.c_lflag &= ~ECHO; /* set echo mode */
     tcsetattr(0, TCSANOW, &new); /* use these new terminal i/o settings now */
 }
 
 /* Restore old terminal I/O settings */
-void resetTermios(void) {
+void reset_termios(void) {
     tcsetattr(0, TCSANOW, &old);
 }
 
-/* Read 1 character - echo defines echo mode */
-char getch_(int echo) {
-    char ch;
-    initTermios(echo);
-    ch = getchar();
-    resetTermios();
-    return ch;
-}
-
-/* Read 1 character without echo */
+/* Reade1 character */
 char getch(void) {
-    return getch_(0);
-}
-
-/* Read 1 character with echo */
-char getche(void) {
-    return getch_(1);
+    char ch;
+    set_termios();
+    ch = getchar();
+    reset_termios();
+    return ch;
 }
