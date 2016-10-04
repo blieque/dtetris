@@ -1,7 +1,7 @@
 all: clean build
 
 build:
-	clang dtetris.c -o dtetris
+	clang -pthread dtetris.c -o dtetris
 
 install:
 	cp -i dtetris /usr/local/bin
