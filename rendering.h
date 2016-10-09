@@ -9,7 +9,7 @@ void move_to(int x, int y) {
     }
 }
 
-void *init_rendering(void *arg) {
+void *init_rendering(void *gd) {
     while (1) {
         printf("##\e[2D");
         sleep(1);

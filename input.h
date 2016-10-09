@@ -1,4 +1,31 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/select.h>
+
 #include "getch.h"
+
+char input_timeout(float seconds) {
+    fd_set set;
+    struct timeval timeout;
+    char input;
+
+    /* Initialize the file descriptor set. */
+    FD_ZERO(&set);
+    FD_SET(0, &set);
+
+    /* Initialize the timeout data structure. */
+    int useconds = (seconds / 1000000) + 0.5;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = useconds;
+
+    /* `select()' returns 0 if timeout, 1 if input available, -1 if error. */
+    int data_inputted = select(FD_SETSIZE, &set, NULL, NULL, &timeout);
+    if (data_inputted) {
+        read(FD_SETSIZE, &input, 1);
+    }
+
+    return input;
+}
 
 void key_left() {
     printf("lef'\n");
@@ -43,12 +70,19 @@ void parse_input(char *input) {
     }
 }
 
-void *init_input(void *arg) {
-    while (1) {
+void *init_input(void *gd) {
+    int i = 0;
+    while (i < 10) {
+        i++;
         char input = getch();
+        /*
+        char input = input_timeout(frame_interval);
+        */
         if (input == 'q' || input == 'Q') {
             return 0;
         }
         parse_input(&input);
+        sleep(1);
     }
+    return NULL;
 }
