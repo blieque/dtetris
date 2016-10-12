@@ -40,7 +40,7 @@ void key_right() {
     printf("raight\n");
 }
 
-void parse_input(char *input) {
+int parse_input(char *input) {
     switch (*input) {
         case 'h':
         case 'H':
@@ -65,14 +65,17 @@ void parse_input(char *input) {
         case 'q':
         case 'Q':
             printf("qveet\n");
-            exit(1);
+            //exit(1);
+            return 0;
             break;
     }
+    return 1;
 }
 
-void *init_input(void *gd) {
+void* init_input(void* gd_v) {
+    game_data_t* gd = (game_data_t*) gd_v;
     int i = 0;
-    while (i < 10) {
+    while (gd->keep_running) {
         i++;
         char input = getch();
         /*
@@ -81,7 +84,7 @@ void *init_input(void *gd) {
         if (input == 'q' || input == 'Q') {
             return 0;
         }
-        parse_input(&input);
+        gd->keep_running = parse_input(&input);
         sleep(1);
     }
     return NULL;
