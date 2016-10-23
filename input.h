@@ -44,28 +44,35 @@ int parse_input(char *input) {
     switch (*input) {
         case 'h':
         case 'H':
-            printf("\e[1D");
+            printf("\e[1D\e[1D");
+            printf("##");
+            printf("\e[1D\e[1D");
             //key_left();
             break;
         case 'j':
         case 'J':
             printf("\e[1B");
+            printf("##");
+            printf("\e[1D\e[1D");
             //key_down();
             break;
         case 'k':
         case 'K':
             printf("\e[1A");
+            printf("##");
+            printf("\e[1D\e[1D");
             //key_up();
             break;
         case 'l':
         case 'L':
-            printf("\e[1C");
+            printf("\e[1C\e[1C");
+            printf("##");
+            printf("\e[1D\e[1D");
             //key_right();
             break;
         case 'q':
         case 'Q':
             printf("qveet\n");
-            //exit(1);
             return 0;
             break;
     }
@@ -81,11 +88,7 @@ void* init_input(void* gd_v) {
         /*
         char input = input_timeout(frame_interval);
         */
-        if (input == 'q' || input == 'Q') {
-            return 0;
-        }
         gd->keep_running = parse_input(&input);
-        sleep(1);
     }
     return NULL;
 }
