@@ -1,8 +1,10 @@
-int round_float(float x) {
+#include <stdlib.h>
+
+static int round_float(float x) {
     return x > 0 ? (int)(x + 0.5) : (int)(x - 0.5);
 }
 
-char* alloc_board(char*** board, int width, int height) {
+static char* alloc_board(char*** board, int width, int height) {
     *board = (char**) malloc(width * sizeof(char*));
     char* board_data = malloc(width * height * sizeof(char));
 
@@ -16,7 +18,7 @@ char* alloc_board(char*** board, int width, int height) {
     return board_data;
 }
 
-void free_board(char*** board, char* _board_data) {
+static void free_board(char*** board, char* _board_data) {
     free(_board_data);
     free(*board);
 }

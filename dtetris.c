@@ -6,23 +6,14 @@
 #include <stdlib.h>
 #include <math.h>
 
-typedef struct game_data game_data_t;
-struct game_data {
-    int keep_running;
-    float frame_rate;
-    float frame_interval;
-    int width;
-    int height;
-    char** board;
-    char* _board_data;
-};
-
+#include "types.h"
 #include "functions.h"
-#include "input.h"
-#include "rendering.h"
 
-struct winsize w;
-game_data_t gd;
+#include "thread_input.h"
+#include "thread_rendering.h"
+
+static struct winsize w;
+static GameData gd;
 
 void game_data_setup() {
     gd.keep_running = 1;
@@ -69,12 +60,9 @@ int main() {
     game_data_setup();
 
     pthread_t pth_input;
-    //pthread_t pth_rendering;
+    pthread_t pth_rendering;
     pthread_create(&pth_input, NULL, init_input, (void*) &gd);
-    //pthread_create(&pth_rendering, NULL, init_rendering, (void*) &gd);
-
-    pthread_join(pth_input, NULL);
-    //pthread_cancel(pth_rendering);
+    pthread_create(&pth_rendering, NULL, init_rendering, (void*) &gd);
 
     game_data_free();
     console_reset();

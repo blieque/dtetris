@@ -2,12 +2,18 @@
 #include <unistd.h>
 #include <sys/select.h>
 
+#include "types.h"
+#include "functions.h"
 #include "getch.h"
 
-char input_timeout(float seconds) {
+static GameData* gd;
+static Point cursor;
+
+static char input_timeout(float seconds) {
     fd_set set;
     struct timeval timeout;
     char input;
+    Point cursor;
 
     /* Initialize the file descriptor set. */
     FD_ZERO(&set);
@@ -27,47 +33,39 @@ char input_timeout(float seconds) {
     return input;
 }
 
-void key_left() {
+static void key_left() {
     printf("lef'\n");
 }
-void key_down() {
+static void key_down() {
     printf("daan\n");
 }
-void key_up() {
+static void key_up() {
     printf("ap\n");
 }
-void key_right() {
+static void key_right() {
     printf("raight\n");
 }
 
-int parse_input(char *input) {
+static int parse_input(char* input, GameData* gd) {
     switch (*input) {
         case 'h':
         case 'H':
-            printf("\e[1D\e[1D");
-            printf("##");
-            printf("\e[1D\e[1D");
+            cursor.x--;
             //key_left();
             break;
         case 'j':
         case 'J':
-            printf("\e[1B");
-            printf("##");
-            printf("\e[1D\e[1D");
+            cursor.y++;
             //key_down();
             break;
         case 'k':
         case 'K':
-            printf("\e[1A");
-            printf("##");
-            printf("\e[1D\e[1D");
+            cursor.y--;
             //key_up();
             break;
         case 'l':
         case 'L':
-            printf("\e[1C\e[1C");
-            printf("##");
-            printf("\e[1D\e[1D");
+            cursor.x++;
             //key_right();
             break;
         case 'q':
@@ -76,11 +74,12 @@ int parse_input(char *input) {
             return 0;
             break;
     }
+    gd->board[cursor.x][cursor.y] = 'X';
     return 1;
 }
 
 void* init_input(void* gd_v) {
-    game_data_t* gd = (game_data_t*) gd_v;
+    GameData* gd = (GameData*) gd_v;
     int i = 0;
     while (gd->keep_running) {
         i++;
@@ -88,7 +87,7 @@ void* init_input(void* gd_v) {
         /*
         char input = input_timeout(frame_interval);
         */
-        gd->keep_running = parse_input(&input);
+        gd->keep_running = parse_input(&input, gd);
     }
     return NULL;
 }

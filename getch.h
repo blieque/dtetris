@@ -4,7 +4,7 @@
 static struct termios old, new;
 
 /* Set new terminal I/O settings */
-void set_termios(void) {
+static void set_termios(void) {
     tcgetattr(0, &old); /* grab old terminal i/o settings */
     new = old; /* make new settings same as old settings */
     new.c_lflag &= ~ICANON; /* disable buffered i/o */
@@ -13,12 +13,12 @@ void set_termios(void) {
 }
 
 /* Restore old terminal I/O settings */
-void reset_termios(void) {
+static void reset_termios(void) {
     tcsetattr(0, TCSANOW, &old);
 }
 
-/* Reade1 character */
-char getch(void) {
+/* Read 1 character */
+static char getch(void) {
     char ch;
     set_termios();
     ch = getchar();
