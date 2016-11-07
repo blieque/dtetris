@@ -1,9 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <signal.h>
 #include <sys/ioctl.h>
 #include <pthread.h>
-
-#include <stdlib.h>
 #include <math.h>
 
 #include "types.h"
@@ -33,7 +32,7 @@ void console_reset() {
     setlinebuf(stdin);
 
     // move out of alternate screen
-    printf("\e[?1049l");
+    //printf("\x1B[?1049l");
 }
 
 void interrupt_handler() {
@@ -52,20 +51,23 @@ void console_setup() {
     signal(SIGINT, interrupt_handler);
 
     // move to alternate screen
-    printf("\e[?1049h");
+    //printf("\x1B[?1049h");
 }
 
 int main() {
+    printf("threadin'\n");
     console_setup();
     game_data_setup();
 
-    pthread_t pth_input;
-    pthread_t pth_rendering;
-    pthread_create(&pth_input, NULL, init_input, (void*) &gd);
-    pthread_create(&pth_rendering, NULL, init_rendering, (void*) &gd);
+    pthread_t thread_input;
+    //pthread_t thread_rendering;
+    pthread_create(&thread_input, NULL, init_input, (void*) &gd);
+    //pthread_create(&thread_rendering, NULL, init_rendering, (void*) &gd);
+    pthread_join(thread_input, NULL);
 
     game_data_free();
     console_reset();
 
+    printf("thread's dead\n");
     return 0;
 }

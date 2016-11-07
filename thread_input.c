@@ -5,26 +5,28 @@
 #include "types.h"
 #include "functions.h"
 #include "getch.h"
+#include "thread_input.h"
 
 static GameData* gd;
 static Point cursor;
 
+/*
 static char input_timeout(float seconds) {
     fd_set set;
     struct timeval timeout;
     char input;
     Point cursor;
 
-    /* Initialize the file descriptor set. */
+    // Initialize the file descriptor set.
     FD_ZERO(&set);
     FD_SET(0, &set);
 
-    /* Initialize the timeout data structure. */
+    // Initialize the timeout data structure.
     int useconds = (seconds / 1000000) + 0.5;
     timeout.tv_sec = 0;
     timeout.tv_usec = useconds;
 
-    /* `select()' returns 0 if timeout, 1 if input available, -1 if error. */
+    // `select()' returns 0 if timeout, 1 if input available, -1 if error.
     int data_inputted = select(FD_SETSIZE, &set, NULL, NULL, &timeout);
     if (data_inputted) {
         read(FD_SETSIZE, &input, 1);
@@ -45,6 +47,7 @@ static void key_up() {
 static void key_right() {
     printf("raight\n");
 }
+*/
 
 static int parse_input(char* input, GameData* gd) {
     switch (*input) {
@@ -79,11 +82,14 @@ static int parse_input(char* input, GameData* gd) {
 }
 
 void* init_input(void* gd_v) {
-    GameData* gd = (GameData*) gd_v;
-    int i = 0;
+    gd = (GameData*) gd_v;
+    printf("a\n");
+    printf("%d\n", gd->keep_running);
+    //int i = 0;
     while (gd->keep_running) {
-        i++;
+        //i++;
         char input = getch();
+        printf("%c\n", input);
         /*
         char input = input_timeout(frame_interval);
         */
