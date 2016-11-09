@@ -49,7 +49,7 @@ static void key_right() {
 }
 */
 
-static int parse_input(char* input, GameData* gd) {
+static int parse_input(char* input) {
     switch (*input) {
         case 'h':
         case 'H':
@@ -89,11 +89,10 @@ void* init_input(void* gd_v) {
     while (gd->keep_running) {
         //i++;
         char input = getch();
-        printf("%c\n", input);
         /*
         char input = input_timeout(frame_interval);
         */
-        gd->keep_running = parse_input(&input, gd);
+        gd->keep_running = parse_input(&input);
     }
     return NULL;
 }
