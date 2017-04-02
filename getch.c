@@ -2,7 +2,8 @@
 #include <stdio.h>
 #include <termios.h>
 
-static struct termios old, new;
+static struct termios old;
+static struct termios new;
 
 /* Set new terminal I/O settings */
 static void set_termios(void) {
@@ -20,9 +21,8 @@ static void reset_termios(void) {
 
 /* Read 1 character */
 char getch(void) {
-    char ch;
     set_termios();
-    ch = getchar();
+    char ch = getchar();
     reset_termios();
     return ch;
 }

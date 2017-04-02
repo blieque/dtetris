@@ -1,5 +1,12 @@
 #include <stdio.h>
+
+#ifndef __USE_POSIX
+    #define __USE_POSIX // setting `_POSIX_C_SOURCE' didne work.
+#endif
 #include <signal.h>
+#undef __USE_POSIX
+
+#include <string.h>
 #include <sys/ioctl.h>
 #include <pthread.h>
 #include <math.h>
@@ -7,6 +14,7 @@
 #include "types.h"
 #include "functions.h"
 
+#include "dtetris.h"
 #include "thread_input.h"
 #include "thread_rendering.h"
 
@@ -26,15 +34,8 @@ void game_data_free() {
     free_board(&gd.board, gd._board_data);
 }
 
-void console_reset() {
-    // undo some terminal settings
-    setvbuf(stdin, NULL, _IOLBF, 0);
-
-    // move out of alternate screen
-    printf("\x1B[?1049l");
-}
-
 void interrupt_handler() {
+    gd.keep_running = 0;
     game_data_free();
     console_reset();
     printf("y u gotta be so rude?\n");
@@ -43,14 +44,30 @@ void interrupt_handler() {
 
 void console_setup() {
     // get and set some terminal properties
+    setvbuf(stdin, NULL, _IONBF, 0);
     ioctl(0, TIOCGWINSZ, &w);
-    setbuf(stdin, NULL);
 
     // set up ctrl-c handler to return to the normal screen
-    signal(SIGINT, interrupt_handler);
+    struct sigaction sa_interrupt;
+    memset(&sa_interrupt, 0, sizeof(struct sigaction));
+    sa_interrupt.sa_handler = interrupt_handler;
+    sa_interrupt.sa_flags = 0;
+
+    sigaction(SIGINT, &sa_interrupt, NULL);
+    sigaction(SIGTERM, &sa_interrupt, NULL);
 
     // move to alternate screen
     printf("\x1B[?1049h");
+    // clear screen and move the cursor to the top left
+    printf("\x1B[0;0H");
+}
+
+void console_reset() {
+    // undo some terminal settings
+    //setvbuf(stdin, NULL, _IOLBF, 0);
+
+    // move out of alternate screen
+    printf("\x1B[?1049l");
 }
 
 int main() {

@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 #define __USE_POSIX199309 // setting `_POSIX_C_SOURCE' didne work.
 #include <time.h>
-#include <string.h>
+#undef __USE_POSIX199309
 
 #include "types.h"
 #include "functions.h"
@@ -38,7 +39,7 @@ void* init_rendering(void* gd_p) {
 
     struct timespec frame_delay;
     frame_delay.tv_sec = 0;
-    frame_delay.tv_nsec = 400000000;
+    frame_delay.tv_nsec = 200000000;
     while (gd->keep_running) {
         render_diff();
         memcpy(_last_board_data,
