@@ -8,6 +8,7 @@
 
 #include <string.h>
 #include <sys/ioctl.h>
+#include <termios.h>
 #include <pthread.h>
 #include <math.h>
 
@@ -20,9 +21,11 @@
 
 static struct winsize w;
 static GameData gd;
+static struct termios termios_new;
+static struct termios termios_old;
 
 void game_data_setup() {
-    gd.keep_running = 1;
+    gd.keep_running = true;
     gd.frame_rate = 2;
     gd.frame_interval = 1 / gd.frame_rate;
     gd.width = fmax(fmin(w.ws_col / 2, 100), 10);
@@ -35,7 +38,7 @@ void game_data_free() {
 }
 
 void interrupt_handler() {
-    gd.keep_running = 0;
+    gd.keep_running = false;
     game_data_free();
     console_reset();
     printf("y u gotta be so rude?\n");
@@ -43,9 +46,19 @@ void interrupt_handler() {
 }
 
 void console_setup() {
-    // get and set some terminal properties
-    setvbuf(stdin, NULL, _IONBF, 0);
+    // get terminal dimensions (and other stuff) and place it in `w'
     ioctl(0, TIOCGWINSZ, &w);
+
+    // turn off buffering for the `stdin' and `stdout' streams
+    setvbuf(stdin, NULL, _IONBF, 0);
+    setvbuf(stdout, NULL, _IONBF, 0);
+
+    // disable character echoing
+    tcgetattr(0, &termios_old);
+    termios_new = termios_old;
+    termios_new.c_lflag &= ~ICANON;
+    termios_new.c_lflag &= ~ECHO;
+    tcsetattr(0, TCSANOW, &termios_new);
 
     // set up ctrl-c handler to return to the normal screen
     struct sigaction sa_interrupt;
@@ -63,11 +76,13 @@ void console_setup() {
 }
 
 void console_reset() {
-    // undo some terminal settings
-    //setvbuf(stdin, NULL, _IOLBF, 0);
-
     // move out of alternate screen
     printf("\x1B[?1049l");
+
+    // undo some terminal settings
+    setvbuf(stdin, NULL, _IOLBF, 0);
+    setvbuf(stdout, NULL, _IOLBF, 0);
+    tcsetattr(0, TCSANOW, &termios_old);
 }
 
 int main() {
