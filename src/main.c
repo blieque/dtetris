@@ -1,7 +1,8 @@
 #include <stdio.h>
 
 #ifndef __USE_POSIX
-    #define __USE_POSIX // setting `_POSIX_C_SOURCE' didne work.
+    // Setting `_POSIX_C_SOURCE' didn't work.
+    #define __USE_POSIX
 #endif
 #include <signal.h>
 #undef __USE_POSIX
@@ -13,9 +14,8 @@
 #include <math.h>
 
 #include "types.h"
-#include "functions.h"
+#include "board.h"
 
-#include "dtetris.h"
 #include "thread_input.h"
 #include "thread_rendering.h"
 
@@ -24,6 +24,10 @@ static GameData gd;
 static struct termios termios_new;
 static struct termios termios_old;
 
+/*
+ * Set various properties of the game data object for reference during
+ * operation.
+ */
 void game_data_setup() {
     gd.keep_running = true;
     gd.frame_rate = 2;
@@ -33,34 +37,34 @@ void game_data_setup() {
     gd._board_data = alloc_board(&gd.board, gd.width, gd.height);
 }
 
+/*
+ * Free up the memory previously allocated for storage of the game board.
+ */
 void game_data_free() {
     free_board(&gd.board, gd._board_data);
 }
 
-void interrupt_handler() {
-    gd.keep_running = false;
-    game_data_free();
-    console_reset();
-    printf("y u gotta be so rude?\n");
-    exit(1);
-}
-
+// Prototype to avoid errors.
+void interrupt_handler();
+/*
+ * Configure various terminal settings for game operation.
+ */
 void console_setup() {
-    // get terminal dimensions (and other stuff) and place it in `w'
+    // Get terminal dimensions (and other stuff).
     ioctl(0, TIOCGWINSZ, &w);
 
-    // turn off buffering for the `stdin' and `stdout' streams
+    // Turn off buffering for the `stdin' and `stdout' streams.
     setvbuf(stdin, NULL, _IONBF, 0);
     setvbuf(stdout, NULL, _IONBF, 0);
 
-    // disable character echoing
+    // Disable character echoing.
     tcgetattr(0, &termios_old);
     termios_new = termios_old;
     termios_new.c_lflag &= ~ICANON;
     termios_new.c_lflag &= ~ECHO;
     tcsetattr(0, TCSANOW, &termios_new);
 
-    // set up ctrl-c handler to return to the normal screen
+    // Set up ^C handler to return to the shell.
     struct sigaction sa_interrupt;
     memset(&sa_interrupt, 0, sizeof(struct sigaction));
     sa_interrupt.sa_handler = interrupt_handler;
@@ -69,26 +73,42 @@ void console_setup() {
     sigaction(SIGINT, &sa_interrupt, NULL);
     sigaction(SIGTERM, &sa_interrupt, NULL);
 
-    // move to alternate screen
+    // Move to alternate screen.
     printf("\x1B[?1049h");
-    // clear screen and move the cursor to the top left
+    // Clear screen and move the cursor to the top left.
     printf("\x1B[0;0H");
 }
 
+/*
+ * Reverse changes made to terminal operation and return to the shell.
+ */
 void console_reset() {
-    // move out of alternate screen
+    // Return to user shell.
     printf("\x1B[?1049l");
 
-    // undo some terminal settings
+    // Undo some terminal settings.jn
     setvbuf(stdin, NULL, _IOLBF, 0);
     setvbuf(stdout, NULL, _IOLBF, 0);
     tcsetattr(0, TCSANOW, &termios_old);
+}
+
+/*
+ * Handler function called when operation is interrupted. This allows us to
+ * tidily exit the program and question the user's morals.
+ */
+void interrupt_handler() {
+    gd.keep_running = false;
+    game_data_free();
+    console_reset();
+    printf("y u gotta be so rude?\n");
+    exit(1);
 }
 
 int main() {
     console_setup();
     game_data_setup();
 
+    // Create execution tbreads.
     pthread_t thread_input;
     pthread_t thread_rendering;
     pthread_create(&thread_input, NULL, init_input, (void*) &gd);

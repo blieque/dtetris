@@ -1,3 +1,6 @@
+#ifndef INCLUDED_TYPES
+#define INCLUDED_TYPES
+
 typedef enum {
     false = 0,
     true = 1
@@ -19,3 +22,5 @@ struct game_data {
     char** board;
     char* _board_data;
 };
+
+#endif

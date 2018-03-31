@@ -1,5 +1,5 @@
-#ifndef FUNCTIONS_H_INCLUDED
-#define FUNCTIONS_H_INCLUDED
+#ifndef INCLUDED_BOARD
+#define INCLUDED_BOARD
 
 #include <stdlib.h>
 
