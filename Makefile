@@ -1,21 +1,21 @@
 CC = clang
 OUTPUT = ./dtetris
+SRCS    = $(shell find ./src -type f -name *.c -printf "%p ")
+HEADERS = $(shell find ./src -type f -name *.h -printf "%p ")
+
 
 build: $(OUTPUT)
 
-$(OUTPUT):
+$(OUTPUT): $(SRCS) $(HEADERS) Makefile
 	@echo "Building..."
 	$(CC) \
+	  -g \
 	  -Wall \
 	  -Wextra \
 	  -pedantic \
 	  -std=c11 \
 	  -pthread \
-	  src/functions.c \
-	  src/getch.c \
-	  src/thread_input.c \
-	  src/thread_rendering.c \
-	  src/dtetris.c \
+	  $(SRCS) \
 	  -o $(OUTPUT)
 
 install:

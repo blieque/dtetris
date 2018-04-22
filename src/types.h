@@ -1,26 +1,32 @@
 #ifndef INCLUDED_TYPES
 #define INCLUDED_TYPES
 
+#include <stdint.h>
+#include <pthread.h>
+
+#include "board.h"
+
 typedef enum {
     false = 0,
     true = 1
 } bool;
 
-typedef struct point Point;
-struct point {
-    int x;
-    int y;
-};
+typedef struct {
+    uint16_t x;
+    uint16_t y;
+} Point;
 
-typedef struct game_data GameData;
-struct game_data {
+typedef struct {
+    pthread_mutex_t mutex;
+
     bool keep_running;
     float frame_rate;
     float frame_interval;
-    int width;
-    int height;
-    char** board;
-    char* _board_data;
-};
+
+    uint16_t width;
+    uint16_t height;
+    Point cursor;
+    Board board;
+} GameData;
 
 #endif

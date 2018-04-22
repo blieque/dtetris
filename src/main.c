@@ -11,13 +11,14 @@
 #include <sys/ioctl.h>
 #include <termios.h>
 #include <pthread.h>
-#include <math.h>
 
 #include "types.h"
+#include "util.h"
 #include "board.h"
 
-#include "thread_input.h"
-#include "thread_rendering.h"
+#include "threads/game.h"
+#include "threads/input.h"
+#include "threads/rendering.h"
 
 static struct winsize w;
 static GameData gd;
@@ -30,18 +31,22 @@ static struct termios termios_old;
  */
 void game_data_setup() {
     gd.keep_running = true;
+
     gd.frame_rate = 2;
     gd.frame_interval = 1 / gd.frame_rate;
-    gd.width = fmax(fmin(w.ws_col / 2, 100), 10);
-    gd.height = fmax(fmin(w.ws_row, 100), 10);
-    gd._board_data = alloc_board(&gd.board, gd.width, gd.height);
+
+    gd.width = max(min(w.ws_col / 2, 100), 10);
+    gd.height = max(min(w.ws_row, 100), 10);
+    gd.cursor.x = 0;
+    gd.cursor.y = gd.height - 1;
+    gd.board = Board_new(gd.width, gd.height);
 }
 
 /*
  * Free up the memory previously allocated for storage of the game board.
  */
 void game_data_free() {
-    free_board(&gd.board, gd._board_data);
+    Board_free(&gd.board);
 }
 
 // Prototype to avoid errors.
@@ -74,9 +79,9 @@ void console_setup() {
     sigaction(SIGTERM, &sa_interrupt, NULL);
 
     // Move to alternate screen.
-    printf("\x1B[?1049h");
+    printf("\033[?1049h");
     // Clear screen and move the cursor to the top left.
-    printf("\x1B[0;0H");
+    printf("\033[0;0H");
 }
 
 /*
@@ -84,7 +89,7 @@ void console_setup() {
  */
 void console_reset() {
     // Return to user shell.
-    printf("\x1B[?1049l");
+    printf("\033[?1049l");
 
     // Undo some terminal settings.jn
     setvbuf(stdin, NULL, _IOLBF, 0);
@@ -108,12 +113,19 @@ int main() {
     console_setup();
     game_data_setup();
 
-    // Create execution tbreads.
+    // Create execution threads.
+
+    pthread_t thread_game;
     pthread_t thread_input;
     pthread_t thread_rendering;
-    pthread_create(&thread_input, NULL, init_input, (void*) &gd);
-    pthread_create(&thread_rendering, NULL, init_rendering, (void*) &gd);
+
+    pthread_create(&thread_game, NULL, init_game, &gd);
+    pthread_create(&thread_input, NULL, init_input, &gd);
+    pthread_create(&thread_rendering, NULL, init_rendering, &gd);
+
+    pthread_join(thread_game, NULL);
     pthread_join(thread_input, NULL);
+    pthread_join(thread_rendering, NULL);
 
     game_data_free();
     console_reset();
