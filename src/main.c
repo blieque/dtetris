@@ -30,6 +30,8 @@ static struct termios termios_old;
  * operation.
  */
 void game_data_setup() {
+    pthread_mutex_init(&gd.mutex, NULL);
+
     gd.keep_running = true;
 
     gd.frame_rate = 2;
@@ -123,7 +125,7 @@ int main() {
     pthread_create(&thread_input, NULL, init_input, &gd);
     pthread_create(&thread_rendering, NULL, init_rendering, &gd);
 
-    pthread_join(thread_game, NULL);
+    //pthread_join(thread_game, NULL);
     pthread_join(thread_input, NULL);
     pthread_join(thread_rendering, NULL);
 

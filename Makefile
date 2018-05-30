@@ -3,7 +3,6 @@ OUTPUT = ./dtetris
 SRCS    = $(shell find ./src -type f -name *.c -printf "%p ")
 HEADERS = $(shell find ./src -type f -name *.h -printf "%p ")
 
-
 build: $(OUTPUT)
 
 $(OUTPUT): $(SRCS) $(HEADERS) Makefile
@@ -20,10 +19,10 @@ $(OUTPUT): $(SRCS) $(HEADERS) Makefile
 
 install:
 	@if [ -e $(OUTPUT) ]; then \
-	  cp -i dtetris /usr/local/bin; \
 	  echo "Copying executable to /usr/local/bin."; \
+	  cp -i dtetris /usr/local/bin; \
 	else \
-	  echo "Run \`make build\` first."; \
+	  echo "Run \`make\` first."; \
 	fi
 
 clean:

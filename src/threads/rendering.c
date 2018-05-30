@@ -47,33 +47,32 @@ static void move_to(int16_t x, int16_t y) {
 }
 
 /*
+ * Draws the cell at ths given co-ordinates.
+ */
+static void draw_cell(uint8_t x, uint8_t y) {
+    move_to(x, y);
+
+    uint8_t cell_value = gd->board.cell[x][y];
+    if (cell_value == 0) {
+        printf("\033[0m  ");
+    } else {
+        printf("\033[48;5;%dm  ", colors_bg[cell_value]);
+    }
+}
+
+/*
  * Calculates the difference between the desired game board state and the state
  * showing in the terminal. This allows us to minimise the use of escape
  * sequences when no re-drawing is required.
  */
 static void render() {
-    // Add the cursor to the board for rendering.
-    //gd->board.cell[gd->cursor.x][gd->cursor.y] = 1;
-    gd->board.cell[0][0] = 1;
-
     // Iterate over the board cells and render those which have changed.
     for (int i = 0; i < gd->width; i++) {
         for (int j = 0; j < gd->height; j++) {
             // Check for change in board state.
-            if (gd->board.cell[i][j] != last_board.cell[i][j]) {
-                move_to(i, j);
-
-                if (gd->board.cell[i][j] == 0) {
-                    printf("\033[0m  ");
-                } else {
-                    printf("\033[48;5;%dm  ", colors_bg[gd->board.cell[i][j]]);
-                }
-            }
+            if (gd->board.cell[i][j] != last_board.cell[i][j]) draw_cell(i, j);
         }
     }
-
-    // Remove the cursor again from the board.
-    gd->board.cell[gd->cursor.x][gd->cursor.y] = 0;
 }
 
 /*
@@ -91,9 +90,15 @@ void* init_rendering(void* gd_p) {
 
     // Main render loop.
     while (gd->keep_running) {
+        // Add the cursor to the board for rendering, then remove it after. The
+        // board is copied before the cursor is removed so that the renderer
+        // removes the cursor next frame.
+        gd->board.cell[gd->cursor.x][gd->cursor.y] = 1;
         render();
-        move_to(0, 0);
         Board_copyData(&last_board, &gd->board);
+        gd->board.cell[gd->cursor.x][gd->cursor.y] = 0;
+        move_to(0, 0);
+
         nanosleep(&frame_delay, NULL);
     }
 
